@@ -117,4 +117,21 @@ public function updateJam(Request $request, $id)
 
     return redirect()->route('admin.jadwal.index')->with('success', 'Jam berhasil diubah');
 }
+public function uploadBukti(Request $request, $id)
+{
+    $request->validate([
+        'bukti_transfer' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $order = Pemesanan::findOrFail($id);
+
+    // Simpan file ke storage/app/public/bukti_transfer
+    $path = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
+
+    // Update kolom bukti_transfer di database
+    $order->bukti_transfer = $path;
+    $order->save();
+
+    return redirect()->route('pembayaran.show')->with('success', 'Bukti transfer berhasil diupload');
+}
 }

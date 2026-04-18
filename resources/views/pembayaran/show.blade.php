@@ -1,40 +1,49 @@
 <x-app-layout>
     <div class="max-w-5xl mx-auto py-10 px-6">
+
         <!-- Judul -->
         <h2 class="text-center text-3xl font-bold text-blue-700 mb-8">Pembayaran Tiket</h2>
 
+        <!-- Flash message -->
+        @if(session('success'))
+            <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded mb-6 text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
             <!-- Kiri: Detail Perjalanan -->
-                    <div class="bg-white rounded-2xl shadow-lg p-8 max-w-xl mx-auto">
-            <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center border-b pb-3">
-                Detail Perjalanan
-            </h3>
+            <div class="bg-white rounded-2xl shadow-lg p-8 max-w-xl mx-auto">
+                <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center border-b pb-3">
+                    Detail Perjalanan
+                </h3>
 
-            <div class="space-y-3 text-gray-700">
-                <p><span class="font-semibold">Nama:</span> {{ $pemesanan->dataDiri->nama }}</p>
-                <p><span class="font-semibold">Rute:</span> {{ $pemesanan->jadwal->asal }} → {{ $pemesanan->jadwal->tujuan }}</p>
-                <p><span class="font-semibold">Tanggal:</span> {{ $pemesanan->tanggal_berangkat }}</p>
-                <p><span class="font-semibold">Jam Berangkat:</span> {{ $pemesanan->jadwal->jam_berangkat }}</p>
-                <p><span class="font-semibold">Harga per Penumpang:</span> 
-                    <span class="text-green-600 font-medium">
-                        Rp {{ number_format($pemesanan->jadwal->harga, 0, ',', '.') }}
-                    </span>
-                </p>
-                <p><span class="font-semibold">Jumlah Penumpang:</span> {{ $pemesanan->penumpang }}</p>
+                <div class="space-y-3 text-gray-700">
+                    <p><span class="font-semibold">Nama:</span> {{ $pemesanan->dataDiri->nama }}</p>
+                    <p><span class="font-semibold">Rute:</span> {{ $pemesanan->jadwal->asal }} → {{ $pemesanan->jadwal->tujuan }}</p>
+                    <p><span class="font-semibold">Tanggal:</span> {{ $pemesanan->tanggal_berangkat }}</p>
+                    <p><span class="font-semibold">Jam Berangkat:</span> {{ $pemesanan->jadwal->jam_berangkat }}</p>
+                    <p><span class="font-semibold">Harga per Penumpang:</span>
+                        <span class="text-green-600 font-medium">
+                            Rp {{ number_format($pemesanan->jadwal->harga, 0, ',', '.') }}
+                        </span>
+                    </p>
+                    <p><span class="font-semibold">Jumlah Penumpang:</span> {{ $pemesanan->penumpang }}</p>
+                </div>
+
+                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <p class="text-lg font-bold text-blue-800">
+                        Total Harga: Rp {{ number_format($pemesanan->penumpang * $pemesanan->jadwal->harga, 0, ',', '.') }}
+                    </p>
+                </div>
+
+                <button type="button"
+                        onclick="window.history.back()"
+                        class="inline-block mt-5 px-6 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition">
+                    ← Kembali
+                </button>
             </div>
-
-            <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                <p class="text-lg font-bold text-blue-800">
-                    Total Harga: Rp {{ number_format($pemesanan->penumpang * $pemesanan->jadwal->harga, 0, ',', '.') }}
-                </p>
-            </div>
-
-            <button type="button" 
-                    onclick="window.history.back()" 
-                    class="inline-block mt-5 px-6 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition">
-                ← Kembali
-            </button>
-        </div>
 
             <!-- Kanan: Status & Upload -->
             <div class="bg-white rounded-xl shadow-md p-6">
@@ -67,28 +76,44 @@
                     Silakan transfer sesuai total harga, lalu upload bukti transfer di bawah.
                 </div>
 
-                <form action="{{ route('pembayaran.proses') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <!-- Form Upload -->
+                <form action="{{ route('pemesanan.uploadBukti', $pemesanan->id_pemesanan) }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      class="space-y-4">
                     @csrf
-                    <input type="hidden" name="id_pemesanan" value="{{ $pemesanan->id_pemesanan }}">
 
                     <div>
-                        <label for="bukti_transfer" class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti Transfer</label>
-                        <input type="file" name="bukti_transfer" id="bukti_transfer" 
-                               class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer focus:ring-blue-500 focus:border-blue-500" required>
-                        <small class="text-gray-500">Format: JPG, JPEG, PNG. Maks 2MB.</small>
+                        <label for="bukti_transfer" class="block text-sm font-medium text-gray-700">
+                            Upload Bukti Transfer
+                        </label>
+                        <input type="file" name="bukti_transfer" id="bukti_transfer"
+                               accept="image/*"
+                               class="mt-1 block w-full border rounded px-3 py-2 text-sm" required>
                     </div>
 
-                    <button type="submit" 
-                            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-full transition">
-                        Kirim Bukti Pembayaran
-                    </button>
+                    <!-- Preview bukti transfer jika sudah ada -->
+                    @if($pemesanan->bukti_transfer)
+                        <div class="mt-3">
+                            <p class="text-sm text-gray-600 mb-2">Bukti transfer yang sudah diupload:</p>
+                            <a href="{{ asset('storage/'.$pemesanan->bukti_transfer) }}" target="_blank"
+                               class="text-blue-600 hover:underline text-sm">Lihat Bukti</a>
+                        </div>
+                    @endif
+
+                    <div>
+                        <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                            Upload
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
 
         <!-- Tombol Dashboard -->
         <div class="mt-8 text-center">
-            <a href="{{ route('home') }}" 
+            <a href="{{ route('home') }}"
                class="inline-block px-6 py-2 rounded-full border border-blue-500 text-blue-600 hover:bg-blue-50 transition">
                 ← Kembali ke Dashboard
             </a>

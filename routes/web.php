@@ -11,6 +11,9 @@ use App\Http\Controllers\EtiketController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\AdminController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -40,8 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Tiket & Riwayat
-    Route::get('/tiket', [EtiketController::class, 'index'])->name('tiket.index');
-    Route::get('/tiket/{id}', [EtiketController::class, 'show'])->name('tiket.show');
+    Route::get('/tiket', [TiketController::class, 'index'])->name('tiket.index');
+    Route::get('/tiket/{id}', [TiketController::class, 'show'])->name('tiket.show');
     Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
 
     // Data Diri
@@ -77,3 +80,29 @@ Route::view('/rute', 'rute.index')->name('rute.index');
 
 // Route login/register bawaan Breeze
 require __DIR__.'/auth.php';
+
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+            ->name('login');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+            ->name('logout');
+
+
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/pemesanan', [AdminController::class, 'pemesanan'])->name('admin.pemesanan.index');
+    Route::put('/pemesanan/{id}/acc', [AdminController::class, 'acc'])->name('admin.pemesanan.acc');
+    Route::put('/pemesanan/{id}/reject', [AdminController::class, 'reject'])->name('admin.pemesanan.reject');
+    Route::put('/pemesanan/{id}/ubah-jadwal', [AdminController::class, 'ubahJadwal'])->name('admin.pemesanan.ubahJadwal');
+    Route::put('/pemesanan/{id}/batal', [AdminController::class, 'batal'])->name('admin.pemesanan.batal');
+    Route::delete('/pemesanan/{id}/hapus', [AdminController::class, 'hapus'])->name('admin.pemesanan.hapus');
+});
+
+Route::post('/pemesanan/{id}/upload-bukti', [AdminController::class, 'uploadBukti'])
+    ->name('pemesanan.uploadBukti');
+
+   Route::middleware(['auth'])->group(function () {
+    Route::get('/tiket/{id}', [TiketController::class, 'show'])->name('tiket.show');
+});

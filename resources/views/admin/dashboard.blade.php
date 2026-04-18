@@ -55,7 +55,7 @@
                             <td class="px-4 py-2">
                                 @if($order->bukti_transfer)
                                     <a href="{{ asset('storage/'.$order->bukti_transfer) }}" target="_blank"
-                                       class="text-blue-600 hover:underline text-sm">Lihat Bukti</a>
+                                    class="text-blue-600 hover:underline text-sm">Lihat Bukti</a>
                                 @else
                                     <span class="text-gray-400 text-sm">Belum ada</span>
                                 @endif

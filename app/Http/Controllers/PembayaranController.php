@@ -26,24 +26,24 @@ class PembayaranController extends Controller
     }
 
 
-    public function proses(Request $request)
+   public function proses(Request $request)
 {
     $request->validate([
-        'id_pemesanan' => 'required|integer',
+        'id_pemesanan'   => 'required|integer',
         'bukti_transfer' => 'required|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
     // Simpan bukti transfer ke storage
     $path = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
 
-    // Update status pemesanan
+    // Update status pemesanan + simpan path bukti transfer
     $pemesanan = Pemesanan::findOrFail($request->id_pemesanan);
-    $pemesanan->status_pemesanan = 'verifikasi_pembayaran'; // ← status otomatis diubah
+    $pemesanan->status_pemesanan = 'verifikasi_pembayaran';
+    $pemesanan->bukti_transfer   = $path;
     $pemesanan->save();
 
-    // (Opsional) Simpan path bukti transfer ke tabel pembayaran jika kamu punya
-
-    return redirect()->route('tiket.show', $pemesanan->id_pemesanan)
+    // Redirect ke halaman pembayaran user
+    return redirect()->route('pembayaran.show', $pemesanan->id_pemesanan)
                      ->with('success', 'Bukti transfer berhasil dikirim. Status: Verifikasi Pembayaran.');
 }
 }
