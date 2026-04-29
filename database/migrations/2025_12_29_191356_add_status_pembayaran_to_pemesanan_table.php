@@ -9,14 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+public function up(): void
 {
     Schema::table('pemesanan', function (Blueprint $table) {
-        $table->enum('status_pembayaran', ['pending', 'approved', 'rejected'])->default('pending');
-        $table->string('bukti_transfer')->nullable();
+        if (!Schema::hasColumn('pemesanan', 'status_pembayaran')) {
+            $table->string('status_pembayaran')
+                ->default('pending');
+        }
     });
 }
-
 public function down(): void
 {
     Schema::table('pemesanan', function (Blueprint $table) {
